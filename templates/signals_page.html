@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalX AI - Render</title>
+    <style>
+        :root { --gold: #d4af37; --card-bg: #0d1117; --border: #30363d; --bg: #010409; }
+        body { background-color: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 450px; margin: 0 auto; }
+        .upload-box { background: var(--card-bg); border: 2px dashed var(--border); border-radius: 20px; padding: 40px; cursor: pointer; }
+        .upload-box:hover { border-color: var(--gold); }
+        #result-box { display: none; margin-top: 20px; background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(212,175,55,0.1); border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="margin-bottom: 20px; color: #2ea043; font-weight: bold;">● AI NEURAL CORE ACTIVE</div>
+    
+    <div class="upload-box" id="upload-zone">
+        <div id="idle-text">
+            <div style="font-size: 30px;">📊</div>
+            <h3>{{ lang['ai_analysis'] }}</h3>
+            <p style="color: #666;">Սեղմեք նկարը բեռնելու համար</p>
+        </div>
+        <div id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Վերլուծվում է...</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*" style="display: none;">
+    </div>
+
+    <div id="result-box">
+        <div style="display: flex; justify-content: space-between;">
+            <div style="text-align: left;">
+                <small style="color: #666;">ՈՐՈՇՈՒՄ</small>
+                <h2 id="res-decision" style="margin: 0;">---</h2>
+            </div>
+            <div style="text-align: right;">
+                <small style="color: #666;">ՀԱՄՈԶՎԱԾՈՒԹՅՈՒՆ</small>
+                <div id="res-conf" style="color: var(--gold); font-size: 20px; font-weight: bold;">0%</div>
+            </div>
+        </div>
+        <div style="margin-top: 15px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; text-align: left;">
+            <small style="color: #666;">ՊԱՏՃԱՌ</small>
+            <p id="res-reason" style="margin: 5px 0 0 0; font-size: 14px; color: #aaa;"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const zone = document.getElementById('upload-zone');
+    const input = document.getElementById('file-input');
+    const loading = document.getElementById('loading');
+    const idle = document.getElementById('idle-text');
+    const result = document.getElementById('result-box');
+
+    zone.onclick = () => input.click();
+
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        idle.style.display = 'none';
+        loading.style.display = 'block';
+        result.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            loading.style.display = 'none';
+            idle.style.display = 'block';
+            result.style.display = 'block';
+
+            document.getElementById('res-decision').innerText = data.decision;
+            document.getElementById('res-decision').style.color = data.decision === 'CALL' ? '#2ea043' : '#f85149';
+            document.getElementById('res-conf').innerText = data.conf + "%";
+            document.getElementById('res-reason').innerText = data.reason;
+
+        } catch (err) {
+            alert("Սխալ սերվերի հետ կապ հաստատելիս");
+            loading.style.display = 'none';
+            idle.style.display = 'block';
+        }
+    };
+</script>
+
+</body>
+</html>

@@ -1,12 +1,14 @@
-import os, json, io
+import os
+import json
+import io
 from flask import Flask, render_template, request, jsonify
 import google.generativeai as genai
 from PIL import Image
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "signalx_2026_key")
+app.secret_key = "signalx_final_key"
 
-# Gemini API Կարգավորում
+# Քո գործող API բանալին
 API_KEY = "AIzaSyD1c-Qx75ItMfcZmnWq91gdSMaCyhhqBz0"
 genai.configure(api_key=API_KEY)
 
@@ -28,25 +30,22 @@ def analyze():
         if not file:
             return jsonify({"decision": "WAIT", "conf": "0", "reason": "Նկարը չկա"})
 
-        # Նկարի մշակում
         img = Image.open(io.BytesIO(file.read()))
         
-        # Մոդելի ընտրություն (ստույգ անվանումը)
+        # ՈՒՇԱԴՐՈՒԹՅՈՒՆ. Օգտագործում ենք միայն մոդելի անունը
         model = genai.GenerativeModel('gemini-1.5-flash')
         
-        prompt = "Analyze this binary options chart. Check RSI, Stochastic and Vortex. Return ONLY JSON: {'decision': 'CALL/PUT', 'conf': '85', 'reason': 'Armenian description of indicators'}"
+        prompt = "Analyze this chart. Decision: CALL or PUT. Conf: 0-100. Reason: Armenian text. Return JSON ONLY."
         
-        # Հարցում Gemini-ին
+        # Կանչում ենք ճիշտ ֆունկցիան
         response = model.generate_content([prompt, img])
         res_text = response.text.strip()
 
-        # JSON զտում տեքստից
         if "{" in res_text:
             res_text = res_text[res_text.find("{"):res_text.rfind("}")+1]
         
         return jsonify(json.loads(res_text))
     except Exception as e:
-        # Սխալի մանրամասն արտածում հասկանալու համար
         return jsonify({"decision": "ERROR", "conf": "0", "reason": str(e)})
 
 if __name__ == "__main__":

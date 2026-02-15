@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "signalx_2026_key")
 
 # Gemini API Կարգավորում (Proxy պետք չէ Render-ում)
-API_KEY = "AIzaSyB3bM8SXNisjIs9dAYQVFjWRec5PlEQR68"
+API_KEY = "AIzaSyD1c-Qx75ItMfcZmnWq91gdSMaCyhhqBz0"
 genai.configure(api_key=API_KEY)
 
 TRANSLATIONS = {
